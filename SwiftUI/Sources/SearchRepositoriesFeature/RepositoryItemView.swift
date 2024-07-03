@@ -13,14 +13,19 @@ struct RepositoryItemView: View {
             .font(.system(size: 20, weight: .bold))
             .lineLimit(1)
           
-          Label {
-            Text("\(viewStore.repository.stars)")
-              .font(.system(size: 14))
-          } icon: {
-            Image(systemName: "star.fill")
-              .resizable()
-              .frame(width: 20, height: 20)
-              .foregroundStyle(Color.yellow)
+          HStack{
+            Text(viewStore.repository.login)
+              .font(.system(size: 16))
+              .padding(.trailing)
+            Label {
+              Text("\(viewStore.repository.stars)")
+                .font(.system(size: 14))
+            } icon: {
+              Image(systemName: "star.fill")
+                .resizable()
+                .frame(width: 20, height: 20)
+                .foregroundStyle(Color.yellow)
+            }
           }
         }
         

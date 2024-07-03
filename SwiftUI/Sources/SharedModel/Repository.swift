@@ -6,6 +6,7 @@ public struct Repository: Equatable, Sendable {
   public let avatarUrl: URL
   public let description: String?
   public let stars: Int
+  public let login: String
 }
 
 public extension Repository {
@@ -15,5 +16,6 @@ public extension Repository {
     self.avatarUrl = item.owner.avatarUrl
     self.description = item.description
     self.stars = item.stargazersCount
+    self.login = item.owner.login
   }
 }
