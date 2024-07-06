@@ -10,6 +10,7 @@ public struct SearchTextFieldReducer: Reducer, Sendable {
     case binding(BindingAction<State>)
     case searchIconTapped
     case clearTextField
+    case cancel
   }
   
   public var body: some ReducerOf<Self> {
@@ -21,6 +22,8 @@ public struct SearchTextFieldReducer: Reducer, Sendable {
       case .searchIconTapped:
         return .none
       case .clearTextField:
+        return .none
+      case .cancel:
         return .none
       }
     }

@@ -20,7 +20,6 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         !showFavoritesOnly || $0.liked
       }
     }
-    
     var textField: SearchTextFieldReducer.State = .init()
     
     public init() {}
@@ -41,7 +40,6 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case itemAppeared(id: Int)
     case searchReposResponse(Result<SearchReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
-    
     case textField(SearchTextFieldReducer.Action)
   }
   
@@ -64,6 +62,26 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         state.textField.text = ""
         return .none
         
+      case .textField(.searchIconTapped):
+        guard !state.textField.text.isEmpty else {
+          state.hasMorePage = false
+          state.items.removeAll()
+          return .cancel(id: CancelId.searchRepos)
+        }
+        state.currentPage = 1
+        state.loadingState = .refreshing
+        return .run { [query = state.textField.text, page = state.currentPage] send in
+          await send(.searchReposResponse(Result {
+            try await githubClient.searchRepos(query: query, page: page)
+          }))
+        }
+        
+      case .textField(.cancel):
+        state.hasMorePage = false
+        state.items.removeAll()
+        return .run { send in await send(SearchRepositoriesReducer.Action.textField(.clearTextField))
+        }
+        
       case .textField:
         return .none
         
@@ -77,7 +95,6 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         case .none:
           break
         }
-        
         state.hasMorePage = response.totalCount > state.items.count
         state.loadingState = .none
         return .none

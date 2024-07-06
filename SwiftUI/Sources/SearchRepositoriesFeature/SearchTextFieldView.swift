@@ -49,7 +49,7 @@ struct SearchTextFieldView: View {
           
           if self.focus {
             Button {
-              viewStore.send(.clearTextField)
+              viewStore.send(.cancel)
               self.focus = false
               //Todo：$queryを空にする処理、フォーカスを外す
             } label: {
