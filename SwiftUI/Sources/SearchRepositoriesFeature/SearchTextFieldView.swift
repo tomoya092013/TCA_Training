@@ -28,7 +28,6 @@ struct SearchTextFieldView: View {
               if !viewStore.text.isEmpty {
                 Button {
                   viewStore.send(.clearTextField)
-                  //Todo：$queryを空にする処理
                 } label: {
                   Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.gray)
@@ -36,7 +35,6 @@ struct SearchTextFieldView: View {
                 .padding(.trailing, 6)
               }
               Button {
-                //Todo：$queryを空にする処理
                 viewStore.send(.searchIconTapped)
               } label: {
                 Image(systemName: "magnifyingglass")
@@ -51,7 +49,6 @@ struct SearchTextFieldView: View {
             Button {
               viewStore.send(.cancel)
               self.focus = false
-              //Todo：$queryを空にする処理、フォーカスを外す
             } label: {
               Text("Cancel")
             }
