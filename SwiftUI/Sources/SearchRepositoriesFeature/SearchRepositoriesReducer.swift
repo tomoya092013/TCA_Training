@@ -8,20 +8,20 @@ import RepositoryDetailFeature
 @Reducer
 public struct SearchRepositoriesReducer: Reducer, Sendable {
   // MARK: - State
-  public struct State: Equatable, Sendable {
+  public struct State: Equatable {
     var items = IdentifiedArrayOf<RepositoryItemReducer.State>()
-    @BindingState var query = ""
     @BindingState var showFavoritesOnly = false
     var currentPage = 1
     var loadingState: LoadingState = .refreshing
     var hasMorePage = false
     var path = StackState<RepositoryDetailReducer.State>()
-    
     var filteredItems: IdentifiedArrayOf<RepositoryItemReducer.State> {
       items.filter {
         !showFavoritesOnly || $0.liked
       }
     }
+    
+    var textField: SearchTextFieldReducer.State = .init()
     
     public init() {}
   }
@@ -41,6 +41,8 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case itemAppeared(id: Int)
     case searchReposResponse(Result<SearchReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
+    
+    case textField(SearchTextFieldReducer.Action)
   }
   
   // MARK: - Dependencies
@@ -55,24 +57,14 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     Reduce { state, action in
       switch action {
         
-      case .binding(\.$query):
-        guard !state.query.isEmpty else {
-          state.hasMorePage = false
-          state.items.removeAll()
-          return .cancel(id: CancelId.searchRepos)
-        }
-        
-        state.currentPage = 1
-        state.loadingState = .refreshing
-        
-        return .run { [query = state.query, page = state.currentPage] send in
-          await send(.searchReposResponse(Result {
-            try await githubClient.searchRepos(query: query, page: page)
-          }))
-        }
-        .debounce(id: CancelId.searchRepos, for: 0.3, scheduler: mainQueue)
-        
       case .binding:
+        return .none
+        
+      case .textField(.clearTextField):
+        state.textField.text = ""
+        return .none
+        
+      case .textField:
         return .none
         
       case let .searchReposResponse(.success(response)):
@@ -98,7 +90,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
           state.currentPage += 1
           state.loadingState = .loadingNext
           
-          return .run { [query = state.query, page = state.currentPage] send in
+          return .run { [query = state.textField.text, page = state.currentPage] send in
             await send(.searchReposResponse(Result {
               try await githubClient.searchRepos(query: query, page: page)
             }))
@@ -117,7 +109,6 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         
       case .path:
         return .none
-        
       }
     }
     .forEach(\.items, action: \.items) {
@@ -125,6 +116,9 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     }
     .forEach(\.path, action: \.path) {
       RepositoryDetailReducer()
+    }
+    Scope(state: \.textField, action: /Action.textField) {
+      SearchTextFieldReducer()
     }
   }
 }

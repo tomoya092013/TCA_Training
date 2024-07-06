@@ -8,12 +8,10 @@ public struct SearchRepositoriesView: View {
   @FocusState var focus:Bool
   
   struct ViewState: Equatable {
-    @BindingViewState var query: String
     @BindingViewState var showFavoritesOnly: Bool
     let hasMorePage: Bool
     
     init(store: BindingViewStore<SearchRepositoriesReducer.State>) {
-      self._query = store.$query
       self._showFavoritesOnly = store.$showFavoritesOnly
       self.hasMorePage = store.hasMorePage
     }
@@ -26,52 +24,10 @@ public struct SearchRepositoriesView: View {
   public var body: some View {
     NavigationStackStore(store.scope(state: \.path, action: \.path)) {
       WithViewStore(store, observe: ViewState.init(store:)) { viewStore in
-        VStack {
-          
-          HStack {
-            ZStack {
-              RoundedRectangle(cornerRadius: 8)
-                .fill(Color(red: 239 / 255,
-                            green: 239 / 255,
-                            blue: 241 / 255))
-                .frame(height: 36)
-              
-              HStack(spacing: 6) {
-                Button {
-                  //Todo：検索処理
-                } label: {
-                  Image(systemName: "magnifyingglass")
-                    .foregroundColor(.gray)
-                    .padding([.leading, .trailing], 8)
-                }
-                
-                TextField("Search", text: viewStore.$query)
-                  .focused(self.$focus)
-                
-                if !viewStore.$query.wrappedValue.isEmpty {
-                  Button {
-                    //Todo：$queryを空にする処理
-                  } label: {
-                    Image(systemName: "xmark.circle.fill")
-                      .foregroundColor(.gray)
-                  }
-                  .padding(.trailing, 6)
-                }
-              }
-            }
-            .padding(.top, self.focus ? 0 : 40)
-
-            if self.focus {
-              Button(action: {
-                self.focus = false
-                //Todo：$queryを空にする処理、フォーカスを外す
-              }, label: {
-                Text("Cancel")
-              })
-            }
-          }
-        }
-        .padding(.horizontal)
+        
+        SearchTextFieldView(
+          store: self.store.scope(state: \.textField, action: SearchRepositoriesReducer.Action.textField)
+        )
         
         List {
           Toggle(isOn: viewStore.$showFavoritesOnly) {
