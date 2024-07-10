@@ -27,7 +27,7 @@ struct SearchTextFieldView: View {
               
               if !viewStore.text.isEmpty {
                 Button {
-                  viewStore.send(.clearTextField)
+                  viewStore.send(.didTapClearTextButton)
                 } label: {
                   Image(systemName: "xmark.circle.fill")
                     .foregroundColor(.gray)
@@ -35,7 +35,7 @@ struct SearchTextFieldView: View {
                 .padding(.trailing, 6)
               }
               Button {
-                viewStore.send(.searchIconTapped)
+                viewStore.send(.didTapSearchButton)
               } label: {
                 Image(systemName: "magnifyingglass")
                   .foregroundColor(.gray)
@@ -47,7 +47,7 @@ struct SearchTextFieldView: View {
           
           if self.focus {
             Button {
-              viewStore.send(.cancel)
+              viewStore.send(.didTapCancelButton)
               self.focus = false
             } label: {
               Text("Cancel")

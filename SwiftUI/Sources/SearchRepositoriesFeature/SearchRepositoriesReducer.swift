@@ -20,7 +20,8 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         !showFavoritesOnly || $0.liked
       }
     }
-    var textField: SearchTextFieldReducer.State = .init()
+    var searchText: String = ""
+    var textFieldFeature: SearchTextFieldReducer.State = .init()
     
     public init() {}
   }
@@ -40,12 +41,11 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case itemAppeared(id: Int)
     case searchReposResponse(Result<SearchReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
-    case textField(SearchTextFieldReducer.Action)
+    case textFieldFeature(SearchTextFieldReducer.Action)
   }
   
   // MARK: - Dependencies
   @Dependency(\.githubClient) var githubClient
-  @Dependency(\.mainQueue) var mainQueue
   
   public init() {}
   
@@ -54,35 +54,32 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     BindingReducer()
     Reduce { state, action in
       switch action {
-        
-      case .binding:
+      case .binding(_):
         return .none
         
-      case .textField(.clearTextField):
-        state.textField.text = ""
-        return .none
-        
-      case .textField(.searchIconTapped):
-        guard !state.textField.text.isEmpty else {
+      case let .textFieldFeature(.search(text: text)):
+        guard !text.isEmpty else {
           state.hasMorePage = false
           state.items.removeAll()
           return .cancel(id: CancelId.searchRepos)
         }
+        state.searchText = text
         state.currentPage = 1
         state.loadingState = .refreshing
-        return .run { [query = state.textField.text, page = state.currentPage] send in
+        return .run { [query = state.searchText, page = state.currentPage] send in
           await send(.searchReposResponse(Result {
             try await githubClient.searchRepos(query: query, page: page)
           }))
         }
-        
-      case .textField(.cancel):
+      case .textFieldFeature(.didTapCancelButton):
+        state.searchText = ""
         state.hasMorePage = false
         state.items.removeAll()
-        return .run { send in await send(SearchRepositoriesReducer.Action.textField(.clearTextField))
-        }
-        
-      case .textField:
+        return .none
+      case .textFieldFeature(.didTapClearTextButton):
+        state.searchText = ""
+        return .none
+      case .textFieldFeature(_):
         return .none
         
       case let .searchReposResponse(.success(response)):
@@ -98,16 +95,14 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         state.hasMorePage = response.totalCount > state.items.count
         state.loadingState = .none
         return .none
-        
       case .searchReposResponse(.failure):
         return .none
-        
       case let .itemAppeared(id: id):
         if state.hasMorePage, state.items.index(id: id) == state.items.count - 1 {
           state.currentPage += 1
           state.loadingState = .loadingNext
           
-          return .run { [query = state.textField.text, page = state.currentPage] send in
+          return .run { [query = state.searchText, page = state.currentPage] send in
             await send(.searchReposResponse(Result {
               try await githubClient.searchRepos(query: query, page: page)
             }))
@@ -115,15 +110,12 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         } else {
           return .none
         }
-        
       case .items:
         return .none
-        
       case let .path(.element(id: id, action: .binding(\.$liked))):
         guard let repositoryDetail = state.path[id: id] else { return .none }
         state.items[id: repositoryDetail.id]?.liked = repositoryDetail.liked
         return .none
-        
       case .path:
         return .none
       }
@@ -134,8 +126,9 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     .forEach(\.path, action: \.path) {
       RepositoryDetailReducer()
     }
-    Scope(state: \.textField, action: /Action.textField) {
+    Scope(state: \.textFieldFeature, action: /Action.textFieldFeature) {
       SearchTextFieldReducer()
     }
   }
 }
+

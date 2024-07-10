@@ -26,7 +26,7 @@ public struct SearchRepositoriesView: View {
       WithViewStore(store, observe: ViewState.init(store:)) { viewStore in
         
         SearchTextFieldView(
-          store: self.store.scope(state: \.textField, action: SearchRepositoriesReducer.Action.textField)
+          store: self.store.scope(state: \.textFieldFeature, action: SearchRepositoriesReducer.Action.textFieldFeature)
         )
         
         List {
