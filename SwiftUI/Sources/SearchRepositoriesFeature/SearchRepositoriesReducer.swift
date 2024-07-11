@@ -42,6 +42,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case searchReposResponse(Result<SearchReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
     case textFieldFeature(SearchTextFieldReducer.Action)
+    case searchRepos(query: String, page: Int)
   }
   
   // MARK: - Dependencies
@@ -69,9 +70,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         let query = state.searchText
         let page = state.currentPage
         return .run { send in
-          await send(.searchReposResponse(Result {
-            try await githubClient.searchRepos(query: query, page: page)
-          }))
+          await send(.searchRepos(query: query, page: page))
         }
       case .textFieldFeature(.didTapCancelButton):
         state.searchText = ""
@@ -106,9 +105,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
           let query = state.searchText
           let page = state.currentPage
           return .run { send in
-            await send(.searchReposResponse(Result {
-              try await githubClient.searchRepos(query: query, page: page)
-            }))
+            await send(.searchRepos(query: query, page: page))
           }
         } else {
           return .none
@@ -121,6 +118,12 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         return .none
       case .path:
         return .none
+      case .searchRepos(query: let query, page: let page):
+        return .run { send in
+          await send(.searchReposResponse(Result {
+            try await githubClient.searchRepos(query: query, page: page)
+          }))
+        }
       }
     }
     .forEach(\.items, action: \.items) {
