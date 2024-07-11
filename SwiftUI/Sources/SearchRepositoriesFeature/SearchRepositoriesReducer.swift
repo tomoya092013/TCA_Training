@@ -66,7 +66,9 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         state.searchText = text
         state.currentPage = 1
         state.loadingState = .refreshing
-        return .run { [query = state.searchText, page = state.currentPage] send in
+        let query = state.searchText
+        let page = state.currentPage
+        return .run { send in
           await send(.searchReposResponse(Result {
             try await githubClient.searchRepos(query: query, page: page)
           }))
@@ -101,8 +103,9 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         if state.hasMorePage, state.items.index(id: id) == state.items.count - 1 {
           state.currentPage += 1
           state.loadingState = .loadingNext
-          
-          return .run { [query = state.searchText, page = state.currentPage] send in
+          let query = state.searchText
+          let page = state.currentPage
+          return .run { send in
             await send(.searchReposResponse(Result {
               try await githubClient.searchRepos(query: query, page: page)
             }))
