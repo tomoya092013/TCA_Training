@@ -2,7 +2,7 @@ import APIKit
 import SharedModel
 
 struct SearchFavoriteReposRequest: GithubRequest {
-  typealias Response = SearchReposResponse
+  typealias Response = SearchFavoriteReposResponse
   let method = APIKit.HTTPMethod.get
   let path = "/user/starred"
   let queryParameters: [String: Int]?

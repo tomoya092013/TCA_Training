@@ -41,6 +41,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case items(IdentifiedActionOf<RepositoryItemReducer>)
     case itemAppeared(id: Int)
     case searchReposResponse(Result<SearchReposResponse, Error>)
+    case searchFavoriteReposResponse(Result<SearchFavoriteReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
     case textFieldFeature(SearchTextFieldReducer.Action)
     case searchRepos(query: String, page: Int)
@@ -85,6 +86,22 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
       case .textFieldFeature(_):
         return .none
         
+      case let .searchFavoriteReposResponse(.success(response)):
+        switch state.loadingState {
+        case .refreshing:
+          state.items = .init(response: response)
+        case .loadingNext:
+          let newItems = IdentifiedArrayOf(response: response)
+          state.items.append(contentsOf: newItems)
+        case .none:
+          break
+        }
+        state.hasMorePage = response.totalCount > state.items.count
+        state.loadingState = .none
+        return .none
+      case .searchFavoriteReposResponse(.failure):
+        return .none
+        
       case let .searchReposResponse(.success(response)):
         switch state.loadingState {
         case .refreshing:
@@ -100,6 +117,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         return .none
       case .searchReposResponse(.failure):
         return .none
+        
       case let .itemAppeared(id: id):
         if state.hasMorePage, state.items.index(id: id) == state.items.count - 1 {
           state.currentPage += 1
@@ -128,7 +146,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         }
       case .searchFavoriteRepos:
         return .run { send in
-          await send(.searchReposResponse(Result {
+          await send(.searchFavoriteReposResponse(Result {
             try await githubClient.searchFavoriteRepos()
           }))
         }
