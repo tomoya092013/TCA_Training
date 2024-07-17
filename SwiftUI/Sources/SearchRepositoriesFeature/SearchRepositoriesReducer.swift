@@ -22,6 +22,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     }
     var searchText: String = ""
     var textFieldFeature: SearchTextFieldReducer.State = .init()
+    var favoriteItems:SearchReposResponse?
     
     public init() {}
   }
@@ -43,6 +44,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
     case textFieldFeature(SearchTextFieldReducer.Action)
     case searchRepos(query: String, page: Int)
+    case searchFavoriteRepos
   }
   
   // MARK: - Dependencies
@@ -122,6 +124,12 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         return .run { send in
           await send(.searchReposResponse(Result {
             try await githubClient.searchRepos(query: query, page: page)
+          }))
+        }
+      case .searchFavoriteRepos:
+        return .run { send in
+          await send(.searchReposResponse(Result {
+            try await githubClient.searchFavoriteRepos()
           }))
         }
       }
