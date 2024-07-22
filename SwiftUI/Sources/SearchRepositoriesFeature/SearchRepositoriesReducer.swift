@@ -41,11 +41,11 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     case items(IdentifiedActionOf<RepositoryItemReducer>)
     case itemAppeared(id: Int)
     case searchReposResponse(Result<SearchReposResponse, Error>)
-    case searchFavoriteReposResponse(Result<SearchFavoriteReposResponse, Error>)
+//    case searchFavoriteReposResponse(Result<SearchFavoriteReposResponse, Error>)
     case path(StackAction<RepositoryDetailReducer.State, RepositoryDetailReducer.Action>)
     case textFieldFeature(SearchTextFieldReducer.Action)
-    case searchRepos(query: String, page: Int)
-    case searchFavoriteRepos
+    case searchRepos
+//    case searchFavoriteRepos
   }
   
   // MARK: - Dependencies
@@ -73,7 +73,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         let query = state.searchText
         let page = state.currentPage
         return .run { send in
-          await send(.searchRepos(query: query, page: page))
+          await send(.searchRepos)
         }
       case .textFieldFeature(.didTapCancelButton):
         state.searchText = ""
@@ -86,21 +86,21 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
       case .textFieldFeature(_):
         return .none
         
-      case let .searchFavoriteReposResponse(.success(response)):
-        switch state.loadingState {
-        case .refreshing:
-          state.items = .init(response: response)
-        case .loadingNext:
-          let newItems = IdentifiedArrayOf(response: response)
-          state.items.append(contentsOf: newItems)
-        case .none:
-          break
-        }
-        state.hasMorePage = response.totalCount > state.items.count
-        state.loadingState = .none
-        return .none
-      case .searchFavoriteReposResponse(.failure):
-        return .none
+//      case let .searchFavoriteReposResponse(.success(response)):
+//        switch state.loadingState {
+//        case .refreshing:
+//          state.items = .init(response: response)
+//        case .loadingNext:
+//          let newItems = IdentifiedArrayOf(response: response)
+//          state.items.append(contentsOf: newItems)
+//        case .none:
+//          break
+//        }
+//        state.hasMorePage = response.totalCount > state.items.count
+//        state.loadingState = .none
+//        return .none
+//      case .searchFavoriteReposResponse(.failure):
+//        return .none
         
       case let .searchReposResponse(.success(response)):
         switch state.loadingState {
@@ -112,7 +112,7 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         case .none:
           break
         }
-        state.hasMorePage = response.totalCount > state.items.count
+//        state.hasMorePage = response.totalCount > state.items.count
         state.loadingState = .none
         return .none
       case .searchReposResponse(.failure):
@@ -122,10 +122,10 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         if state.hasMorePage, state.items.index(id: id) == state.items.count - 1 {
           state.currentPage += 1
           state.loadingState = .loadingNext
-          let query = state.searchText
-          let page = state.currentPage
+//          let query = state.searchText
+//          let page = state.currentPage
           return .run { send in
-            await send(.searchRepos(query: query, page: page))
+            await send(.searchRepos)
           }
         } else {
           return .none
@@ -138,18 +138,18 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
         return .none
       case .path:
         return .none
-      case .searchRepos(query: let query, page: let page):
+      case .searchRepos:
         return .run { send in
           await send(.searchReposResponse(Result {
-            try await githubClient.searchRepos(query: query, page: page)
+            try await githubClient.searchRepos()
           }))
         }
-      case .searchFavoriteRepos:
-        return .run { send in
-          await send(.searchFavoriteReposResponse(Result {
-            try await githubClient.searchFavoriteRepos()
-          }))
-        }
+//      case .searchFavoriteRepos:
+//        return .run { send in
+//          await send(.searchFavoriteReposResponse(Result {
+//            try await githubClient.searchFavoriteRepos()
+//          }))
+//        }
       }
     }
     .forEach(\.items, action: \.items) {
@@ -163,4 +163,3 @@ public struct SearchRepositoriesReducer: Reducer, Sendable {
     }
   }
 }
-

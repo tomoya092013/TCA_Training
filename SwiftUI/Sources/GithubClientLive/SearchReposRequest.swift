@@ -2,19 +2,15 @@ import APIKit
 import SharedModel
 
 struct SearchReposRequest: GithubRequest {
-    typealias Response = SearchReposResponse
-    let method = APIKit.HTTPMethod.get
-    let path = "/search/repositories"
-    let queryParameters: [String: Any]?
-
-    public init(
-        query: String,
-        page: Int
-    ) {
-        self.queryParameters = [
-            "q": query,
-            "page": page.description,
-            "per_page": 10
-        ]
-    }
+  typealias Response = SearchReposResponse
+  let method = APIKit.HTTPMethod.get
+  let path = "/user/starred"
+  let queryParameters: [String: Int]?
+  
+  public init() {
+    self.queryParameters = [
+      "page": 1,
+      "per_page": 10
+    ]
+  }
 }

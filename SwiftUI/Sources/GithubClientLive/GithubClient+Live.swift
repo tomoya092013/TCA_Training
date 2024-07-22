@@ -8,12 +8,12 @@ extension GithubClient: DependencyKey {
   
   static func live(apiClient: ApiClient = .liveValue) -> Self {
     .init(
-      searchRepos: { query, page in
-        try await apiClient.send(request: SearchReposRequest(query: query, page: page))
-      },
-      searchFavoriteRepos: {
-        try await apiClient.send(request: SearchFavoriteReposRequest())
+      searchRepos: {
+        try await apiClient.send(request: SearchReposRequest())
       }
+//      searchFavoriteRepos: {
+//        try await apiClient.send(request: SearchFavoriteReposRequest())
+//      }
     )
   }
 }

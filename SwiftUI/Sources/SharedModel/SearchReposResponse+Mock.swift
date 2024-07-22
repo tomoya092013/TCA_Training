@@ -4,7 +4,7 @@ import Foundation
 public extension SearchReposResponse {
     static func mock(totalCount: Int = 5) -> Self {
         .init(
-            totalCount: totalCount,
+//            totalCount: totalCount,
             items: [
                 .mock(id: 0, name: "Alice"),
                 .mock(id: 1, name: "Bob"),
@@ -17,7 +17,7 @@ public extension SearchReposResponse {
 
     static func mock2(totalCount: Int = 5) -> Self {
         .init(
-            totalCount: totalCount,
+//            totalCount: totalCount,
             items: [
                 .mock(id: 5, name: "Frank"),
                 .mock(id: 6, name: "George"),
@@ -30,7 +30,7 @@ public extension SearchReposResponse {
 
     static func mockAll() -> Self {
         .init(
-            totalCount: 10,
+//            totalCount: 10,
             items: [
                 .mock(id: 0, name: "Alice"),
                 .mock(id: 1, name: "Bob"),

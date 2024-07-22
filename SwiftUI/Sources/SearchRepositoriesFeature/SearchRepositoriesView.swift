@@ -30,7 +30,7 @@ public struct SearchRepositoriesView: View {
         )
         
         Button {
-          viewStore.send(.searchFavoriteRepos)
+          viewStore.send(.searchRepos)
         } label: {
           Text("お気に入り一覧へ")
         }
