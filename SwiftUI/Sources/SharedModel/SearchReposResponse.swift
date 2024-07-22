@@ -1,19 +1,19 @@
 import Foundation
 
 public struct SearchReposResponse: Sendable, Decodable, Equatable {
-    public let totalCount: Int
+//    public let totalCount: Int
     public let items: [Item]
 
     public init(
-        totalCount: Int,
+//        totalCount: Int,
         items: [Item]
     ) {
-        self.totalCount = totalCount
+//        self.totalCount = totalCount
         self.items = items
     }
 
     enum CodingKeys: String, CodingKey {
-        case totalCount = "total_count"
+//        case totalCount = "total_count"
         case items
     }
 

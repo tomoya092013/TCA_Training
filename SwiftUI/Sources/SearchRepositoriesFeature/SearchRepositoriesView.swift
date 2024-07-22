@@ -29,6 +29,13 @@ public struct SearchRepositoriesView: View {
           store: self.store.scope(state: \.textFieldFeature, action: SearchRepositoriesReducer.Action.textFieldFeature)
         )
         
+        Button {
+          viewStore.send(.searchRepos)
+        } label: {
+          Text("お気に入り一覧へ")
+        }
+        .buttonStyle(.plain)
+        
         List {
           Toggle(isOn: viewStore.$showFavoritesOnly) {
             Text("Favorites Only")
@@ -68,11 +75,11 @@ public struct SearchRepositoriesView: View {
 #Preview {
   SearchRepositoriesView(
     store: .init(initialState: SearchRepositoriesReducer.State()) {
-      SearchRepositoriesReducer()
-        .dependency(
-          \.githubClient,
-           .init(searchRepos: { _, _ in .mock() })
-        )
+//      SearchRepositoriesReducer()
+//        .dependency(
+//          \.githubClient,
+//           .init(searchRepos: { _, _ in .mock() })
+//        )
     }
   )
 }
